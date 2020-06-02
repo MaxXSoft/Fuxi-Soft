@@ -1,0 +1,22 @@
+import lib.soc
+import slides
+
+extern def entry() {
+  initDisplay()
+  var pressed = false
+  while true {
+    let step = readWord(STEP_ADDR)
+    if !pressed {
+      if step as i32 & (1 << 0) != 1 {
+        prevSlide()
+      }
+      else if step as i32 & (1 << 1) != 1 {
+        nextSlide()
+      }
+      pressed = true
+    }
+    else if step as i32 == 3 {
+      pressed = false
+    }
+  }
+}
