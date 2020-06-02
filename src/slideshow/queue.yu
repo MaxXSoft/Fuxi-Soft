@@ -1,0 +1,42 @@
+public struct Queue {
+  buf: u8 var*,
+  max_len: u32,
+  begin: u32,
+  len: u32,
+}
+
+inline def newQueue(buf: u8 var*, max_len: u32): Queue {
+  [Queue] {buf, max_len, 0 as u32, 0 as u32}
+}
+
+inline def len(this: Queue&): u32 {
+  this.len
+}
+
+inline def at(this: Queue&, offset: u32): u8 {
+  var i = this.begin + offset
+  if i >= this.max_len {
+    i -= this.max_len
+  }
+  this.buf[i]
+}
+
+inline def push(this: Queue var&, data: u8) {
+  // push data into queue
+  var i = this.begin + this.len
+  if i >= this.max_len {
+    i -= this.max_len
+  }
+  this.buf[i] = data
+  // update length
+  if this.len < this.max_len {
+    this.len += 1 as u32
+  }
+  else {
+    // update begin pointer
+    this.begin = this.begin + 1 as u32
+    if this.begin == this.max_len {
+      this.begin = 0 as u32
+    }
+  }
+}
