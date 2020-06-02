@@ -96,7 +96,7 @@ def print_array2d(arr2d, name):
     if n % epl != epl - 1:
       print('')
     print('};\n')
-  print(f'SlideInfo {name}[] = {{')
+  print(f'extern "C" SlideInfo {name}[] = {{')
   for k, arr in enumerate(arr2d):
     print(f'  {{{name}{k}, {len(arr)}}},')
   print(f'  {{(const unsigned char *)0, 0}},')
