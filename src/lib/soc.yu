@@ -22,11 +22,11 @@ inline let UART_LSR_RI  = 0x40
 
 // MMIO operations
 inline def writeWord(addr: i32, x: u32) {
-  let io = addr as volatile u32 var*
+  let io = addr as u32 volatile var*
   (*io) = x
 }
 
 inline def readWord(addr: i32): u32 {
-  let io = addr as volatile u32 var*
+  let io = addr as u32 volatile var*
   (*io)
 }
