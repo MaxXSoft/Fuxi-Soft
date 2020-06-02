@@ -1,0 +1,95 @@
+import lib.soc
+import queue
+
+struct SlideInfo {
+  data: u8*,
+  len: u32,
+}
+
+extern declare kSlides: ()
+
+let frame_buffer = 0x80400000 as u8 var*
+var cur_slide = 0, buf: u8[255], pal: u8[12]
+
+
+def slide(): SlideInfo& {
+  let slides = kSlides as SlideInfo*
+  slides[cur_slide]
+}
+
+def drawPixel(x: i32, y: i32, i: i32) {
+  let LINE_SIZE = 256 * 16
+  frame_buffer[y * LINE_SIZE + x * 4 + 0] = pal[i * 3 + 0]
+  frame_buffer[y * LINE_SIZE + x * 4 + 1] = pal[i * 3 + 1]
+  frame_buffer[y * LINE_SIZE + x * 4 + 2] = pal[i * 3 + 2]
+}
+
+def drawPixel(ofs: i32, byte: u8) {
+  let x = (ofs % 160) * 4, y = ofs / 160
+  var i = 0
+  while i < 4 {
+    let shift = (3 - i) * 2
+    let index = ((byte as i32) >> shift) & 0b11
+    drawPixel(x + i, y, index)
+    i += 1
+  }
+}
+
+def appendByte(ofs: i32 var&, byte: u8) {
+  if ofs < 12 {
+    pal[ofs] = byte
+  }
+  else {
+    drawPixel(ofs - 12, byte)
+  }
+  ofs += 1
+}
+
+def updateDisplay() {
+  let data = slide().data, len = slide().len
+  var data_ofs = 0, win = newQueue(buf as u8 var*, 255 as u32)
+  // uncompress data
+  var i = 0
+  while i as u32 < len {
+    let offset = data[i], length = data[i + 1], val = data[i + 2]
+    if !offset {
+      appendByte(data_ofs, val)
+      win.push(val)
+    }
+    else {
+      var j = 0, k = win.len() - offset as u32
+      while j < length as i32 {
+        let cur = win.at(k + j as u32)
+        appendByte(data_ofs, cur)
+        win.push(cur)
+        j += 1
+        k -= 1 as u32
+      }
+    }
+    i += 3
+  }
+  // sync to graphic RAM
+  asm { "fence.i" }
+}
+
+// initialize VGA controller
+public def initDisplay() {
+  writeWord(VGA_ADDR + VGA_AR, frame_buffer as u32)
+  updateDisplay()
+}
+
+// goto next slideshow
+public def nextSlide() {
+  if slide().data != null as u8* {
+    cur_slide += 1
+    updateDisplay()
+  }
+}
+
+// goto previous slideshow
+public def prevSlide() {
+  if cur_slide > 0 {
+    cur_slide -= 1
+    updateDisplay()
+  }
+}
