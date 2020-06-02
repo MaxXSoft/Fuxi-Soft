@@ -99,6 +99,7 @@ def print_array2d(arr2d, name):
   print(f'SlideInfo {name}[] = {{')
   for k, arr in enumerate(arr2d):
     print(f'  {{{name}{k}, {len(arr)}}},')
+  print(f'  {{(const unsigned char *)0, 0}},')
   print('};')
 
 
