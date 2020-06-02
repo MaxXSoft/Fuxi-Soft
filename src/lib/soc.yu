@@ -1,0 +1,31 @@
+// VGA controller
+inline let VGA_ADDR     = 0x11030000
+inline let VGA_AR       = 0x00
+
+// GPIO controller
+inline let TIMER_ADDR   = 0x1107e000
+inline let LED_ADDR     = 0x1107f000
+inline let NUM_ADDR     = 0x1107f010
+inline let SWITCH_ADDR  = 0x1107f020
+
+// LCD controller
+inline let LCD_ADDR     = 0x11050000
+inline let LCD_XRES     = 480
+inline let LCD_YRES     = 800
+
+// UART controller
+inline let UART_LSR     = 0x11041014
+inline let UART_DAT     = 0x11041000
+inline let UART_LSR_DA  = 0x01
+inline let UART_LSR_RI  = 0x40
+
+// MMIO operations
+inline def writeWord(addr: i32, x: u32) {
+  let io = addr as volatile u32 var*
+  (*io) = x
+}
+
+inline def readWord(addr: i32): u32 {
+  let io = addr as volatile u32 var*
+  (*io)
+}
