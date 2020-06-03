@@ -8,7 +8,7 @@ struct SlideInfo {
 
 extern declare kSlides: ()
 
-let frame_buffer = 0x80400000 as u8 var*
+let frame_buffer = 0x80400000 as u8 volatile var*
 var cur_slide = 0, buf: u8[255], pal: u8[12]
 
 
@@ -19,9 +19,9 @@ def slide(): SlideInfo& {
 
 def drawPixel(x: i32, y: i32, i: i32) {
   let LINE_SIZE = 256 * 16
-  frame_buffer[y * LINE_SIZE + x * 4 + 0] = pal[i * 3 + 0]
+  frame_buffer[y * LINE_SIZE + x * 4 + 0] = pal[i * 3 + 2]
   frame_buffer[y * LINE_SIZE + x * 4 + 1] = pal[i * 3 + 1]
-  frame_buffer[y * LINE_SIZE + x * 4 + 2] = pal[i * 3 + 2]
+  frame_buffer[y * LINE_SIZE + x * 4 + 2] = pal[i * 3 + 0]
 }
 
 def drawPixel(ofs: i32, byte: u8) {
