@@ -17,10 +17,12 @@ SECTIONS
     *(.data*)
     *(.sdata)
   }
+  _bss_start = .;
   .bss : {
     *(.bss)
     *(.sbss*)
   }
+  _bss_end = .;
   . = ALIGN(4) + 0x1000;
   _stack_top = .;
 }
