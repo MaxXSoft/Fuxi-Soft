@@ -105,6 +105,7 @@ def print_array2d(arr2d, name):
 
 if __name__ == '__main__':
   root, dirs, files = next(os.walk(os.sys.argv[1]))
+  files.sort()
   # make output dir
   out_dir = os.path.join(root, 'output')
   if not os.path.exists(out_dir):
@@ -113,6 +114,8 @@ if __name__ == '__main__':
   all_data = []
   for i in files:
     if i.endswith('.png'):
+      os.sys.stderr.write(f'processing "{i}"...\n')
+      # generate data
       img_file = os.path.join(root, i)
       img, data = gen_img_data(img_file)
       all_data.append(data)
