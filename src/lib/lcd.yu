@@ -1,0 +1,81 @@
+import soc
+
+
+// defined in 'lcd.cpp'
+extern declare kLcdInitInsts: ()
+
+let LCD_INST_OFFSET   = 0x0
+let LCD_DATA_OFFSET   = 0x1
+let LCD_INIT_INS_LEN  = 381
+
+def delay(interval_ms: i32) {
+  let now = readWord(TIMER_ADDR)
+  while readWord(TIMER_ADDR) - now < (interval_ms * 100000) as u32 {}
+}
+
+def writeLcd(ofs: i32, val: u32) {
+  writeWord(LCD_ADDR + (ofs << 2), val)
+}
+
+def seekPoint(x: u32, y: u32): i32 {
+  if x < LCD_XRES as u32 && y < LCD_YRES as u32 {
+    writeLcd(LCD_INST_OFFSET, 0x2a00 as u32);
+    writeLcd(LCD_DATA_OFFSET, ((x as i32 >> 8) & 0xff) as u32);
+    writeLcd(LCD_INST_OFFSET, 0x2a01 as u32);
+    writeLcd(LCD_DATA_OFFSET, x & 0xff as u32);
+    writeLcd(LCD_INST_OFFSET, 0x2b00 as u32);
+    writeLcd(LCD_DATA_OFFSET, ((y as i32 >> 8) & 0xff) as u32);
+    writeLcd(LCD_INST_OFFSET, 0x2b01 as u32);
+    writeLcd(LCD_DATA_OFFSET, y & 0xff as u32);
+    0
+  }
+  else {
+    -1
+  }
+}
+
+// initialize LCD
+public def initLcd() {
+  let insts = kLcdInitInsts as u32*
+  var i = 0
+  while i < LCD_INIT_INS_LEN as i32 {
+    writeLcd(LCD_INST_OFFSET, insts[i * 2])
+    writeLcd(LCD_DATA_OFFSET, insts[i * 2 + 1])
+    i += 1
+  }
+  writeLcd(LCD_INST_OFFSET, 0x1100 as u32)
+  delay(100)
+  writeLcd(LCD_INST_OFFSET, 0x2900 as u32)
+}
+
+// draw a single point
+public def drawPoint(x: u32, y: u32, p: u16) {
+  if !seekPoint(x, y) {
+    writeLcd(LCD_INST_OFFSET, 0x2c00 as u32)
+    writeLcd(LCD_DATA_OFFSET, p as u32)
+  }
+}
+
+// perform memory copy
+public def fillData(x: u32, y: u32, data: u16*, len: u32) {
+  if !seekPoint(x, y) {
+    writeLcd(LCD_INST_OFFSET, 0x2c00 as u32)
+    var i = 0
+    while i as u32 < len {
+      writeLcd(LCD_DATA_OFFSET, data[i] as u32)
+      i += 1
+    }
+  }
+}
+
+// fill memory with color
+public def fillColor(x: u32, y: u32, color: u16, len: u32) {
+  if !seekPoint(x, y) {
+    writeLcd(LCD_INST_OFFSET, 0x2c00 as u32)
+    var i = 0
+    while i as u32 < len {
+      writeLcd(LCD_DATA_OFFSET, color as u32)
+      i += 1
+    }
+  }
+}
