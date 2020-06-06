@@ -17,8 +17,8 @@ inline let LCD_YRES     = 800
 // UART controller
 inline let UART_LSR     = 0x11041014
 inline let UART_DAT     = 0x11041000
-inline let UART_LSR_DA  = 0x01
-inline let UART_LSR_RI  = 0x40
+inline let UART_LSR_DA  = 0x01 as u32
+inline let UART_LSR_RI  = 0x40 as u32
 
 // MMIO operations
 inline def writeWord(addr: i32, x: u32) {
