@@ -18,31 +18,37 @@ export BUILD_DIR := $(TOP_DIR)/build
 export SRC_DIR := $(TOP_DIR)/src
 export LIB_DIR := $(SRC_DIR)/lib
 export SLIDE_DIR := $(SRC_DIR)/slideshow
+export STOPWATCH_DIR := $(SRC_DIR)/stopwatch
 export OBJ_DIR := $(BUILD_DIR)/obj
 
 # all sub-makes
-SUB_MAKE := $(LIB_DIR) $(SLIDE_DIR)
+SUB_MAKE := $(LIB_DIR) $(SLIDE_DIR) $(STOPWATCH_DIR)
 
 
 .SILENT:
-.PHONY: all clean lib slideshow $(SUB_MAKE)
+.PHONY: all clean lib slideshow stopwatch $(SUB_MAKE)
 
-all: lib slideshow
+all: lib slideshow stopwatch
 
 clean:
 	$(info cleaning...)
 	-rm -rf $(OBJ_DIR)
 	-$(MAKE) -C $(LIB_DIR) $@
 	-$(MAKE) -C $(SLIDE_DIR) $@
+	-$(MAKE) -C $(STOPWATCH_DIR) $@
 
 lib: $(BUILD_DIR) $(LIB_DIR)
 
 slideshow: $(BUILD_DIR) $(SLIDE_DIR)
 
+stopwatch: $(BUILD_DIR) $(STOPWATCH_DIR)
+
 $(SUB_MAKE):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
 $(SLIDE_DIR): $(LIB_DIR)
+
+$(STOPWATCH_DIR): $(LIB_DIR)
 
 $(BUILD_DIR):
 	mkdir $@

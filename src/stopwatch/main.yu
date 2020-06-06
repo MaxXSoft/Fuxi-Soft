@@ -1,0 +1,62 @@
+import lib.soc
+
+
+def toBcd(val: u32): u32 {
+  var val = val, ans = 0 as u32, i = 0
+  while i < 8 {
+    ans |= (val % 10 as u32) << (i * 4) as u32
+    val /= 10 as u32
+    i += 1
+  }
+  ans
+}
+
+
+struct Stopwatch {
+  timer: u32,
+  started: bool,
+}
+
+def newStopwatch(): Stopwatch {
+  writeWord(NUM_ADDR, 0 as u32)
+  [Stopwatch] {0 as u32, false}
+}
+
+def stop(this: Stopwatch var&) {
+  this.timer = 0 as u32
+  this.started = false
+}
+
+def start(this: Stopwatch var&) {
+  this.timer = readWord(TIMER_ADDR)
+  this.started = true
+}
+
+def started(this: Stopwatch&): bool {
+  this.started
+}
+
+def display(this: Stopwatch&) {
+  let diff = readWord(TIMER_ADDR) - this.timer
+  let mili = diff / 100000 as u32 % 1000 as u32
+  let sec = diff / 100000000 as u32
+  let val = (sec.toBcd() << 16 as u32) | mili.toBcd()
+  writeWord(NUM_ADDR, val)
+}
+
+
+extern def entry() {
+  var stopwatch = newStopwatch()
+  while true {
+    let switch = readWord(SWITCH_ADDR)
+    if !switch {
+      stopwatch.stop()
+    }
+    else {
+      if !stopwatch.started() {
+        stopwatch.start()
+      }
+      stopwatch.display()
+    }
+  }
+}
