@@ -1,0 +1,76 @@
+import lib.soc
+import lib.lcd
+import lib.io
+import uart
+
+
+/*
+ * fillb:         fill black color, and set fore color to white
+ * fillw:         fill white color, and set fore color to black
+ * draw x, y, c:  draw c+1 pixels, begin at (x, y)
+ * halt:          just halt
+ */
+
+enum InstOp {
+  FillB = 0, FillW = 1, Halt = 2,
+  /*
+   * draw1  x, y, c
+   *    76 54 32 10  7..0 7..0  7..0
+   *    10 xx yy cc  x..x y..y  c..c
+   * draw2  x, y, c
+   *    76 54 32 10  7..0 7..0 15..0
+   *    11 xx yy cc  x..x y..y  c..c (le)
+   */
+  Draw = 1 << 7,
+}
+
+var buf: u8[8 * 1024]
+
+def runVM(insts: u8*) {
+  var fore = 0x0000 as u16, i = 0
+  while true {
+    when insts[i] as InstOp {
+      InstOp.FillB {
+        fillColor(0 as u32, 80 as u32, 0x0000 as u16,
+                  (LCD_XRES * 640) as u32)
+        fore = 0xffff as u16
+        i += 1
+      }
+      InstOp.FillW {
+        fillColor(0 as u32, 80 as u32, 0xffff as u16,
+                  (LCD_XRES * 640) as u32)
+        fore = 0x0000 as u16
+        i += 1
+      }
+      InstOp.Halt {
+        return
+      }
+      else {
+        var x: i32, y: i32, c: i32
+        x = ((insts[i] as i32 << 4) & 0x300) | insts[i + 1] as i32
+        y = ((insts[i] as i32 << 6) & 0x300) | insts[i + 2] as i32
+        if ((insts[i] as i32) & 0xc0) == 0x80 {
+          c = ((insts[i] as i32 << 8) & 0x300) | insts[i + 3] as i32
+          i += 4
+        }
+        else if ((insts[i] as i32) & 0xc0) == 0xc0 {
+          c = (insts[i] as i32 << 16) & 0x30000
+          c |= insts[i + 3] as i32 | (insts[i + 4] as i32 << 8)
+          i += 5
+        }
+        fillColor(x as u32, (y + 80) as u32, fore, (c + 1) as u32)
+      }
+    }
+  }
+}
+
+extern def entry() {
+  initLcd()
+  fillColor(0 as u32, 0 as u32, 0x0000 as u16,
+            (LCD_XRES * LCD_YRES) as u32)
+  while true {
+    fillBuf(buf as u8 var*)
+    runVM(buf as u8 var*)
+    io.putChar('d')
+  }
+}

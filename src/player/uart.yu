@@ -1,0 +1,32 @@
+import lib.io
+
+
+def waitMagicHeader() {
+  var i = 0
+  while i < 4 {
+    i = if io.getChar() == 0x9e as u8 {
+      i + 1
+    }
+    else {
+      0
+    }
+  }
+}
+
+def getWord(): u32 {
+  var word = io.getChar() as u32
+  word |= io.getChar() as u32 << 8 as u32
+  word |= io.getChar() as u32 << 16 as u32
+  word |= io.getChar() as u32 << 24 as u32
+  word
+}
+
+public def fillBuf(buf: u8 var*) {
+  waitMagicHeader()
+  let len = getWord()
+  var i = 0
+  while i as u32 < len {
+    buf[i] = io.getChar()
+    i += 1
+  }
+}
