@@ -1,10 +1,25 @@
 # Fuxi-Soft
 
-Some bare-metal softwares that can run on Fuxi SoC.
+Some bare-metal software that can run on Fuxi SoC.
+
+## Building from Source
+
+You may want to check the toolchain configuration in `toolchain.mk`. Then you can build this repository by executing the following command lines:
+
+```
+$ git clone --recursive https://github.com/MaxXSoft/Fuxi-Soft.git
+$ cd Fuxi-Soft
+$ make -j8
+```
 
 ## Details
 
-> Under construction...
+This repo includes the following software:
+
+* **slideshow**: a slide show program that can display 2-bit image via VGA controller.
+* **stopwatch**: a stopwatch program.
+* **player**: binary video player.
+* **tetris**: classic Tetris game.
 
 ## Copyright and License
 
