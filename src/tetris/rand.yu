@@ -1,0 +1,13 @@
+import lib.soc
+
+
+var seed: u32
+
+public def srand() {
+  seed = readWord(TIMER_ADDR) & 0x7fff as u32
+}
+
+public def rand(): i32 {
+  seed = (seed * 214013 as u32 + 2531011 as u32)
+  (seed as i32 >> 16) & 0x7fff
+}

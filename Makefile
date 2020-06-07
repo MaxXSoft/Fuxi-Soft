@@ -20,16 +20,17 @@ export LIB_DIR := $(SRC_DIR)/lib
 export SLIDE_DIR := $(SRC_DIR)/slideshow
 export STOPWATCH_DIR := $(SRC_DIR)/stopwatch
 export PLAYER_DIR := $(SRC_DIR)/player
+export TETRIS_DIR := $(SRC_DIR)/tetris
 export OBJ_DIR := $(BUILD_DIR)/obj
 
 # all sub-makes
-SUB_MAKE := $(LIB_DIR) $(SLIDE_DIR) $(STOPWATCH_DIR) $(PLAYER_DIR)
+SUB_MAKE := $(LIB_DIR) $(SLIDE_DIR) $(STOPWATCH_DIR) $(PLAYER_DIR) $(TETRIS_DIR)
 
 
 .SILENT:
-.PHONY: all clean lib slideshow stopwatch player $(SUB_MAKE)
+.PHONY: all clean lib slideshow stopwatch player tetris $(SUB_MAKE)
 
-all: lib slideshow stopwatch player
+all: lib slideshow stopwatch player tetris
 
 clean:
 	$(info cleaning...)
@@ -38,6 +39,7 @@ clean:
 	-$(MAKE) -C $(SLIDE_DIR) $@
 	-$(MAKE) -C $(STOPWATCH_DIR) $@
 	-$(MAKE) -C $(PLAYER_DIR) $@
+	-$(MAKE) -C $(TETRIS_DIR) $@
 
 lib: $(BUILD_DIR) $(LIB_DIR)
 
@@ -47,6 +49,8 @@ stopwatch: $(BUILD_DIR) $(STOPWATCH_DIR)
 
 player: $(BUILD_DIR) $(PLAYER_DIR)
 
+tetris: $(BUILD_DIR) $(TETRIS_DIR)
+
 $(SUB_MAKE):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
@@ -55,6 +59,8 @@ $(SLIDE_DIR): $(LIB_DIR)
 $(STOPWATCH_DIR): $(LIB_DIR)
 
 $(PLAYER_DIR): $(LIB_DIR)
+
+$(TETRIS_DIR): $(LIB_DIR)
 
 $(BUILD_DIR):
 	mkdir $@

@@ -1,0 +1,41 @@
+import lib.soc
+import lib.lcd
+import rand
+import game
+
+
+let KEY_LEFT    = 0x1000 as u32
+let KEY_RIGHT   = 0x2000 as u32
+let KEY_ROTATE  = 0x4000 as u32
+let KEY_DROP    = 0x8000 as u32
+let KEY_PAUSE   = 0x0100 as u32
+
+def detectKey() {
+  let key = readWord(KEY_ADDR)
+  if (key & KEY_LEFT) != 0 as u32 {
+    performAction(Action.Left)
+  }
+  else if (key & KEY_RIGHT) != 0 as u32 {
+    performAction(Action.Right)
+  }
+  if (key & KEY_ROTATE) != 0 as u32 {
+    performAction(Action.RotateR)
+  }
+  if (key & KEY_DROP) != 0 as u32 {
+    performAction(Action.SoftDrop)
+  }
+  if (key & KEY_PAUSE) != 0 as u32 {
+    performAction(Action.Pause)
+  }
+}
+
+extern def entry() {
+  srand()
+  initLcd()
+  resetGame()
+  nextFrame()
+  while true {
+    detectKey()
+    nextFrame()
+  }
+}

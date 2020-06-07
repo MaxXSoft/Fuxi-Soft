@@ -1,0 +1,307 @@
+import graphic
+import rand
+
+
+// actions
+public enum Action {
+  Left, Right, SoftDrop, RotateR, Pause,
+}
+
+// colors
+enum Color: u8 {
+  None, I, O, T, S, Z, J, L, Frame,
+}
+
+// blocks
+struct BlockInfo {
+  blocks: u16[4],
+  color: Color,
+}
+let BLOCK_INFO = [BlockInfo[7]] {
+  // I
+  [BlockInfo] {
+    [u16[4]] {0x0f00 as u16, 0x2222 as u16, 0x00f0 as u16, 0x4444 as u16},
+    Color.I,
+  },
+  // O
+  [BlockInfo] {
+    [u16[4]] {0xcc00 as u16, 0xcc00 as u16, 0xcc00 as u16, 0xcc00 as u16},
+    Color.O,
+  },
+  // T
+  [BlockInfo] {
+    [u16[4]] {0x0e40 as u16, 0x4c40 as u16, 0x4e00 as u16, 0x4640 as u16},
+    Color.T,
+  },
+  // S
+  [BlockInfo] {
+    [u16[4]] {0x06c0 as u16, 0x8c40 as u16, 0x6c00 as u16, 0x4620 as u16},
+    Color.S,
+  },
+  // Z
+  [BlockInfo] {
+    [u16[4]] {0x0c60 as u16, 0x4c80 as u16, 0xc600 as u16, 0x2640 as u16},
+    Color.Z,
+  },
+  // J
+  [BlockInfo] {
+    [u16[4]] {0x44c0 as u16, 0x8e00 as u16, 0x6440 as u16, 0x0e20 as u16},
+    Color.J,
+  },
+  // L
+  [BlockInfo] {
+    [u16[4]] {0x4460 as u16, 0x0e80 as u16, 0xc440 as u16, 0x2e00 as u16},
+    Color.L,
+  },
+}
+let BLOCK_WIDTH = 24
+let AREA_LEFT = 5, AREA_TOP = 1, AREA_WIDTH = 10, AREA_HEIGHT = 20
+
+// game status
+var lines = 0, interval = 0, tick = 0, block = 0, dir = 0
+var x = 0, y = 0, area: Color[AREA_WIDTH * AREA_HEIGHT], paused = true
+
+
+def getColor(color: Color): u16 {
+  when color {
+    Color.None { 0xffff }
+    Color.I { 0x05fb }
+    Color.O { 0xde80 }
+    Color.T { 0xa01b }
+    Color.S { 0x3f00 }
+    Color.Z { 0xd80a }
+    Color.J { 0x02bb }
+    Color.L { 0xdbc0 }
+    Color.Frame { 0x0000 }
+    else { 0xffff }
+  } as u16
+}
+
+// block iterator
+struct BlockIter {
+  block: u16,
+  color: Color,
+  is_block: bool,
+  x: i32,
+  y: i32,
+  bit: i32,
+}
+
+def newBlockIter(id: i32, dir: i32): BlockIter {
+  let block = BLOCK_INFO[id].blocks[dir]
+  let color = BLOCK_INFO[id].color
+  [BlockIter] {block, color, false, -1, 0, 0x8000}
+}
+
+def color(this: BlockIter&): Color {
+  this.color
+}
+
+def isBlock(this: BlockIter&): bool {
+  this.is_block
+}
+
+def x(this: BlockIter&): i32 {
+  this.x
+}
+
+def y(this: BlockIter&): i32 {
+  this.y
+}
+
+def next(this: BlockIter var&): BlockIter& {
+  this.is_block = (this.block & this.bit as u16) != 0 as u16
+  this.x += 1
+  if this.x == 4 {
+    this.x = 0
+    this.y += 1
+  }
+  this.bit >>= 1
+  this
+}
+
+def last(this: BlockIter&): bool {
+  this.bit <= 0
+}
+
+
+// check if the specific block in position (x, y) is occupied
+def occupied(id: i32, dir: i32, x: i32, y: i32): bool {
+  for it in newBlockIter(id, dir) {
+    if it.isBlock() {
+      let x = x + it.x(), y = y + it.y()
+      if x < 0 || x >= AREA_WIDTH || y < 0 || y >= AREA_HEIGHT ||
+          area[y * AREA_WIDTH + x] != Color.None {
+        return true
+      }
+    }
+  }
+  false
+}
+
+// put current block to game area
+def putBlock() {
+  for it in newBlockIter(block, dir) {
+    if it.isBlock() {
+      let yy = y + it.y(), xx = x + it.x()
+      area[yy * AREA_WIDTH + xx] = it.color()
+    }
+  }
+}
+
+// random generator
+def nextBlock() {
+  block = rand() % 7
+  dir = 0
+  x = (AREA_WIDTH - 4) / 2
+  y = 0
+}
+
+// removes filled lines in game area
+def removeLines() {
+  var dst = AREA_HEIGHT - 1, y = AREA_HEIGHT - 1
+  while y >= 0 {
+    var filled = true, x = 0
+    // copy lines
+    while x < AREA_WIDTH {
+      if (area[y * AREA_WIDTH + x] == Color.None) { filled = false }
+      area[dst * AREA_WIDTH + x] = area[y * AREA_WIDTH + x]
+      x += 1
+    }
+    // update target line
+    if !filled {
+      dst -= 1
+    }
+    else {
+      lines += 1
+      if lines % 20 == 0 && interval > 1 {
+        interval = 14 - lines / 20
+      }
+    }
+    y -= 1
+  }
+}
+
+// reset game status
+def reset() {
+  // initialize area
+  var i = 0
+  while i < AREA_WIDTH * AREA_HEIGHT {
+    area[i] = Color.None
+    i += 1
+  }
+  // initialize game
+  lines = 0
+  interval = 14
+  tick = 0
+  paused = true
+  nextBlock()
+}
+
+// move current block
+def move(action: Action) {
+  when action {
+    Action.Left {
+      if !occupied(block, dir, x - 1, y) { x -= 1 }
+    }
+    Action.Right {
+      if !occupied(block, dir, x + 1, y) { x += 1 }
+    }
+    Action.SoftDrop {
+      if occupied(block, dir, x, y + 1) {
+        putBlock()
+        removeLines()
+        nextBlock()
+        if occupied(block, dir, x, y) {
+          reset()
+        }
+      }
+      else {
+        y += 1
+      }
+    }
+    Action.RotateR {
+      let new_dir = (dir + 1) % 4
+      if !occupied(block, new_dir, x, y) { dir = new_dir }
+    }
+  }
+}
+
+// draw background
+def drawBg() {
+  clear(getColor(Color.None))
+  fillRect((AREA_LEFT - 1) * BLOCK_WIDTH + BLOCK_WIDTH / 2,
+           (AREA_TOP - 1) * BLOCK_WIDTH + BLOCK_WIDTH / 2,
+           BLOCK_WIDTH * AREA_WIDTH + BLOCK_WIDTH,
+           BLOCK_WIDTH * AREA_HEIGHT + BLOCK_WIDTH,
+           getColor(Color.Frame))
+  fillRect((AREA_LEFT - 1) * BLOCK_WIDTH + BLOCK_WIDTH * 3 / 4,
+           (AREA_TOP - 1) * BLOCK_WIDTH + BLOCK_WIDTH * 3 / 4,
+           BLOCK_WIDTH * AREA_WIDTH + BLOCK_WIDTH / 2,
+           BLOCK_WIDTH * AREA_HEIGHT + BLOCK_WIDTH / 2,
+           getColor(Color.None))
+}
+
+// draw blocks
+def drawBlocks() {
+  // draw game area
+  var xx = 0
+  while xx < AREA_WIDTH {
+    var yy = 0
+    while yy < AREA_HEIGHT {
+      let color = area[yy * AREA_WIDTH + xx]
+      if color != Color.None {
+        fillRect((AREA_LEFT + xx) * BLOCK_WIDTH,
+                 (AREA_TOP + yy) * BLOCK_WIDTH,
+                 BLOCK_WIDTH, BLOCK_WIDTH, getColor(color))
+      }
+      yy += 1
+    }
+    xx += 1
+  }
+  // draw current block
+  for it in newBlockIter(block, dir) {
+    if it.isBlock() {
+      let dx = x + it.x(), dy = y + it.y()
+      if dx >= 0 && dx < AREA_WIDTH && dy >= 0 && dy < AREA_HEIGHT {
+        fillRect((AREA_LEFT + dx) * BLOCK_WIDTH,
+                 (AREA_TOP + dy) * BLOCK_WIDTH,
+                 BLOCK_WIDTH, BLOCK_WIDTH, getColor(it.color()))
+      }
+    }
+  }
+}
+
+// draw next frame and update game status
+def update() {
+  drawBg()
+  drawBlocks()
+  tick += 1
+  if tick >= interval {
+    tick = 0
+    move(Action.SoftDrop)
+  }
+}
+
+// reset game
+public def resetGame() {
+  reset()
+  update()
+  refresh()
+}
+
+// handle keyboard input
+public def performAction(act: Action) {
+  if act == Action.Pause {
+    paused = !paused
+  }
+  else if !paused {
+    move(act)
+  }
+}
+
+// draw next frame
+public def nextFrame() {
+  if !paused { update() }
+  refresh()
+}

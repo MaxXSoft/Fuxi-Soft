@@ -1,0 +1,29 @@
+import lib.soc
+import lib.lcd
+
+
+var buf: u16[LCD_XRES * LCD_YRES]
+
+public def clear(color: u16) {
+  var i = 0
+  while i < LCD_XRES * LCD_YRES {
+    buf[i] = color
+    i += 1
+  }
+}
+
+public def fillRect(x: i32, y: i32, w: i32, h: i32, color: u16) {
+  var i = y
+  while i < y + h {
+    var j = x
+    while j < x + w {
+      buf[i * LCD_XRES + j] = color
+      j += 1
+    }
+    i += 1
+  }
+}
+
+public def refresh() {
+  fillData(0 as u32, 0 as u32, buf as u16*, (LCD_XRES * LCD_YRES) as u32)
+}
