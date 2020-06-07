@@ -1,0 +1,8 @@
+extern def memset(dst: u8 var*, c: i32, n: u32): u8 var* {
+  var d = dst, i = 0 as u32
+  while i < n {
+    d[i] = c as u8
+    i += 1 as u32
+  }
+  dst
+}
