@@ -7,6 +7,7 @@ inline let TIMER_ADDR   = 0x1107e000
 inline let LED_ADDR     = 0x1107f000
 inline let NUM_ADDR     = 0x1107f010
 inline let SWITCH_ADDR  = 0x1107f020
+inline let KEY_ADDR     = 0x1107f024
 inline let STEP_ADDR    = 0x1107f028
 
 // LCD controller
