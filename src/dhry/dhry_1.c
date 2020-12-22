@@ -18,7 +18,7 @@
 #include "dhry.h"
 
 #ifndef DHRY_ITERS
-#define DHRY_ITERS 2000
+#define DHRY_ITERS 200000
 #endif
 
 /* Global Variables: */
@@ -57,7 +57,7 @@ extern  int     times ();
 #ifdef TIME
 // extern long     time();
                 /* see library function "time"  */
-#define Too_Small_Time 2
+#define Too_Small_Time (2*TIMER_SEC)
                 /* Measurements should last at least 2 seconds */
 #endif
 #ifdef MSC_CLOCK
@@ -276,6 +276,9 @@ void entry ()
   else
   {
 #ifdef TIME
+    printf ("User Time (Tick):                           ");
+    printf ("%ld \n", User_Time);
+    User_Time /= TIMER_SEC;
     Microseconds = User_Time * Mic_secs_Per_Second / Number_Of_Runs;
     Dhrystones_Per_Second = Number_Of_Runs / User_Time;
 #else

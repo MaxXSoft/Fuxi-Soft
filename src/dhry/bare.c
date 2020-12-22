@@ -5,7 +5,6 @@
 #define UART_LSR_RI 0x40
 
 #define TIMER       (*(volatile unsigned int *)0x1107e000)
-#define TIMER_SEC   100000000
 
 #define READ_CSR(reg)                             \
   ({                                              \
@@ -32,7 +31,7 @@ void PrintPerfInfo() {
 }
 
 long time(long *p) {
-  return TIMER / TIMER_SEC;
+  return TIMER;
 }
 
 char *malloc(unsigned int size) {

@@ -1,6 +1,8 @@
 #ifndef FUXISOFT_DHRY_BARE_H_
 #define FUXISOFT_DHRY_BARE_H_
 
+#define TIMER_SEC 100000000
+
 void PutChar(char c);
 void PrintPerfInfo();
 
