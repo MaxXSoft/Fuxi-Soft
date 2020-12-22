@@ -44,8 +44,7 @@ volatile ee_s32 seed5_volatile = 0;
 CORETIMETYPE
 barebones_clock()
 {
-#error \
-    "You must implement a method to measure time in barebones_clock()! This function should return current time.\n"
+    return *(volatile unsigned int *)0x1107e000;
 }
 /* Define : TIMER_RES_DIVIDER
         Divider to trade off timer resolution and total time that can be
@@ -59,7 +58,7 @@ barebones_clock()
 #define MYTIMEDIFF(fin, ini)       ((fin) - (ini))
 #define TIMER_RES_DIVIDER          1
 #define SAMPLE_TIME_IMPLEMENTATION 1
-#define EE_TICKS_PER_SEC           (CLOCKS_PER_SEC / TIMER_RES_DIVIDER)
+#define EE_TICKS_PER_SEC           (100000000 / TIMER_RES_DIVIDER)
 
 /** Define Host specific (POSIX), or target specific global time variables. */
 static CORETIMETYPE start_time_val, stop_time_val;
@@ -129,8 +128,6 @@ ee_u32 default_num_contexts = 1;
 void
 portable_init(core_portable *p, int *argc, char *argv[])
 {
-#error \
-    "Call board initialization routines in portable init (if needed), in particular initialize UART!\n"
     if (sizeof(ee_ptr_int) != sizeof(ee_u8 *))
     {
         ee_printf(
@@ -150,4 +147,28 @@ void
 portable_fini(core_portable *p)
 {
     p->portable_id = 0;
+}
+
+void entry() {
+#define READ_CSR(reg)                                 \
+    ({                                                \
+        unsigned int __tmp;                           \
+        asm volatile("csrr %0, " #reg : "=r"(__tmp)); \
+        __tmp;                                        \
+    })
+
+    // call main function
+    extern int main();
+    main();
+
+    // print performance info
+    unsigned int mcycle = READ_CSR(mcycle);
+    unsigned int mcycleh = READ_CSR(mcycleh);
+    unsigned int minstret = READ_CSR(minstret);
+    unsigned int minstreth = READ_CSR(minstreth);
+    ee_printf("cycle: %x%08x, instret: %x%08x\n",
+              mcycleh, mcycle, minstreth, minstret);
+    for (;;);
+
+#undef READ_CSR
 }
