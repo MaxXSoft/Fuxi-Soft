@@ -22,5 +22,6 @@ $(STOPWATCH_TARGET): $(STOPWATCH_OBJ)
 	$(info making stopwatch program...)
 	$(LD) -T$(LIB_DIR)/linker.ld -L$(BUILD_DIR) -lfsrt -o $@ $^
 	$(OBJD) $@ > $@.dump
+	$(if $(filter 0, $(DEBUG)), $(STRIP) $@ -o $@)
 
 include $(TOP_DIR)/rules.mk

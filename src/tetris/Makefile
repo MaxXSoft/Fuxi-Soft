@@ -22,5 +22,6 @@ $(TETRIS_TARGET): $(TETRIS_OBJ)
 	$(info making tetris program...)
 	$(LD) -T$(LIB_DIR)/linker.ld -L$(BUILD_DIR) -lfsrt -o $@ $^
 	$(OBJD) $@ > $@.dump
+	$(if $(filter 0, $(DEBUG)), $(STRIP) $@ -o $@)
 
 include $(TOP_DIR)/rules.mk
