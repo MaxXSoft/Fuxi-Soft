@@ -22,6 +22,12 @@ YUFLAGS := -Werror $(YU_OPT_ARG)
 YUFLAGS += -tt riscv32-unknown-elf -tc generic-rv32 -tf +m,+a
 export YUC := $(YU_BIN)/yuc $(YUFLAGS)
 
+# cross C compiler
+CFLAGS := -Wall -Werror -c -static $(C_DEBUG_ARG) $(C_OPT_ARG)
+CFLAGS += -fno-builtin -fno-pic
+CFLAGS += -target riscv32-unknown-elf -march=rv32ima -mabi=ilp32
+export CC := $(LLVM_BIN)/clang $(CFLAGS)
+
 # cross C++ compiler
 CXXFLAGS := -Wall -Werror -c -static $(C_DEBUG_ARG) $(C_OPT_ARG)
 CXXFLAGS += -fno-builtin -fno-pic

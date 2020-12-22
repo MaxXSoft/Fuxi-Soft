@@ -3,6 +3,11 @@ $(OBJ_DIR)/%.yu.ll: $(TOP_DIR)/%.yu
 	-mkdir -p $(dir $@)
 	$(YUC) $(YUCFLAGS) -ot llvm $^ > $@
 
+$(OBJ_DIR)/%.c.o: $(TOP_DIR)/%.c
+	$(info CC  $@)
+	-mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -o $@ $^
+
 $(OBJ_DIR)/%.cpp.o: $(TOP_DIR)/%.cpp
 	$(info CXX $@)
 	-mkdir -p $(dir $@)
