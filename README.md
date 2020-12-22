@@ -20,6 +20,8 @@ This repo includes the following software:
 * **stopwatch**: a stopwatch program.
 * **player**: binary video player.
 * **tetris**: classic Tetris game.
+* **dhry**: Dhrystone 2.1 benchmark.
+* **coremark**: CoreMark benchmark.
 
 ## Copyright and License
 
