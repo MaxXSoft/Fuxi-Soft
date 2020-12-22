@@ -74,7 +74,7 @@ long            Microseconds,
 /* end of variables for time measurement */
 
 
-int entry ()
+void entry ()
 /*****/
 
   /* main program, corresponds to procedures        */
@@ -294,7 +294,7 @@ int entry ()
     printf ("\n");
   }
   
-  return 0;
+  for (;;);
 }
 
 
