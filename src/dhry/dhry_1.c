@@ -290,6 +290,7 @@ int entry ()
     printf ("Dhrystones per Second:                      ");
     printf ("%d / %ld = %ld \n", Number_Of_Runs, User_Time,
                                  Dhrystones_Per_Second);
+    PrintPerfInfo();
     printf ("\n");
   }
   

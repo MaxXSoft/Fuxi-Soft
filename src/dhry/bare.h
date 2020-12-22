@@ -2,6 +2,7 @@
 #define FUXISOFT_DHRY_BARE_H_
 
 void PutChar(char c);
+void PrintPerfInfo();
 
 long time(long *p);
 char *malloc(unsigned int size);
