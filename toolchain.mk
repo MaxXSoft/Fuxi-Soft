@@ -45,6 +45,10 @@ export OBJC := $(LLVM_BIN)/llvm-objcopy $(OBJCFLAGS)
 OBJDFLAGS := -D
 export OBJD := objdump $(OBJDFLAGS)
 
+# strip
+STRIPFLAGS := --strip-unneeded --strip-sections
+export STRIP := $(LLVM_BIN)/llvm-strip $(STRIPFLAGS)
+
 # archiver
 ARFLAGS := ru
 export AR := $(LLVM_BIN)/llvm-ar $(ARFLAGS)
