@@ -21,7 +21,8 @@ inline def at(this: Queue&, offset: u32): u8 {
   this.buf[i]
 }
 
-inline def push(this: Queue var&, data: u8) {
+// returns true if the begin pointer has been updated
+inline def push(this: Queue var&, data: u8): bool {
   // push data into queue
   var i = this.begin + this.len
   if i >= this.max_len {
@@ -31,6 +32,7 @@ inline def push(this: Queue var&, data: u8) {
   // update length
   if this.len < this.max_len {
     this.len += 1 as u32
+    false
   }
   else {
     // update begin pointer
@@ -38,5 +40,6 @@ inline def push(this: Queue var&, data: u8) {
     if this.begin == this.max_len {
       this.begin = 0 as u32
     }
+    true
   }
 }
