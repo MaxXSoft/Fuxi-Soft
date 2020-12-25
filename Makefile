@@ -21,19 +21,20 @@ export SLIDE_DIR := $(SRC_DIR)/slideshow
 export STOPWATCH_DIR := $(SRC_DIR)/stopwatch
 export PLAYER_DIR := $(SRC_DIR)/player
 export TETRIS_DIR := $(SRC_DIR)/tetris
+export UNCOMP_DIR := $(SRC_DIR)/uncompressor
 export DHRY_DIR := $(SRC_DIR)/dhry
 export COREMARK_DIR := $(SRC_DIR)/coremark
 export OBJ_DIR := $(BUILD_DIR)/obj
 
 # all sub-makes
 SUB_MAKE := $(LIB_DIR) $(SLIDE_DIR) $(STOPWATCH_DIR) $(PLAYER_DIR)
-SUB_MAKE += $(TETRIS_DIR) $(DHRY_DIR) $(COREMARK_DIR)
+SUB_MAKE += $(TETRIS_DIR) $(UNCOMP_DIR) $(DHRY_DIR) $(COREMARK_DIR)
 
 
 .SILENT:
-.PHONY: all clean lib slideshow stopwatch player tetris dhry coremark $(SUB_MAKE)
+.PHONY: all clean lib slideshow stopwatch player tetris uncompressor dhry coremark $(SUB_MAKE)
 
-all: lib slideshow stopwatch player tetris dhry coremark
+all: lib slideshow stopwatch player tetris uncompressor dhry coremark
 
 clean:
 	$(info cleaning...)
@@ -43,6 +44,7 @@ clean:
 	-$(MAKE) -C $(STOPWATCH_DIR) $@
 	-$(MAKE) -C $(PLAYER_DIR) $@
 	-$(MAKE) -C $(TETRIS_DIR) $@
+	-$(MAKE) -C $(UNCOMP_DIR) $@
 	-$(MAKE) -C $(DHRY_DIR) $@
 	-$(MAKE) -C $(COREMARK_DIR) $@
 
@@ -55,6 +57,8 @@ stopwatch: $(BUILD_DIR) $(STOPWATCH_DIR)
 player: $(BUILD_DIR) $(PLAYER_DIR)
 
 tetris: $(BUILD_DIR) $(TETRIS_DIR)
+
+uncompressor: $(BUILD_DIR) $(UNCOMP_DIR)
 
 dhry: $(BUILD_DIR) $(DHRY_DIR)
 
@@ -70,6 +74,8 @@ $(STOPWATCH_DIR): $(LIB_DIR)
 $(PLAYER_DIR): $(LIB_DIR)
 
 $(TETRIS_DIR): $(LIB_DIR)
+
+$(UNCOMP_DIR): $(LIB_DIR)
 
 $(BUILD_DIR):
 	mkdir $@
