@@ -35,17 +35,19 @@ def uncompress(data: u8*, size: u32, dest: u8 var*) {
       while j < len as i32 {
         let cur = win.at(k + j as u32)
         dest.appendByte(data_ofs, cur)
-        win.push(cur)
+        if win.push(cur) {
+          k -= 1 as u32
+        }
         j += 1
-        k -= 1 as u32
       }
     }
     i += 3
   }
+  io <<< "size of uncompressed data: " <<< data_ofs <<< " bytes\n"
 }
 
 // load ELF file to memory
-def loadELF(addr: u8*): u8* {
+def loadElf(addr: u8*): u8* {
   // read & check ELF file
   let elf = newElfFile(addr)
   let ehdr = elf.getEhdr()
@@ -73,11 +75,12 @@ def loadELF(addr: u8*): u8* {
 extern def entry() {
   // uncompress payload
   let payload = _payload_start as u8*
-  let size = _payload_start as u32 - _payload_end as u32
+  let size = _payload_end as u32 - _payload_start as u32
+  io <<< "payload size: " <<< size <<< " bytes\n"
   let dest = _end as u8 var*
   payload.uncompress(size, dest)
   // load ELF
-  let addr = loadELF(dest)
+  let addr = loadElf(dest)
   // jump to ELF file
   io <<< "jumping to address 0x" <<$ addr as u32 <<< "...\n\n"
   jumpToAddr(addr)
