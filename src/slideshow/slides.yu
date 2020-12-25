@@ -61,9 +61,10 @@ def updateDisplay() {
       while j < length as i32 {
         let cur = win.at(k + j as u32)
         appendByte(data_ofs, cur)
-        win.push(cur)
+        if win.push(cur) {
+          k -= 1 as u32
+        }
         j += 1
-        k -= 1 as u32
       }
     }
     i += 3
