@@ -7,30 +7,30 @@ extern def memset(dst: u8 var*, c: i32, n: u32): u8 var* {
   dst
 }
 
-extern def memmove(dst: u8 var*, src: u8*, n: USize): u8 var* {
+extern def memmove(dst: u8 var*, src: u8*, n: u32): u8 var* {
   var s = src, d = dst, n = n
   if s < d && s + n > d {
     // overlapped
     s += n
     d += n
-    while n > 0 as USize {
+    while n > 0 as u32 {
       d -= 1
       s -= 1
       (*d) = *s
-      n -= 1 as USize
+      n -= 1 as u32
     }
   }
   else {
-    while n > 0 as USize {
+    while n > 0 as u32 {
       *d = *s
       d += 1
       s += 1
-      n -= 1 as USize
+      n -= 1 as u32
     }
   }
   dst
 }
 
-extern def memcpy(dst: u8 var*, src: u8*, n: USize): u8 var* {
+extern def memcpy(dst: u8 var*, src: u8*, n: u32): u8 var* {
   memmove(dst, src, n)
 }
