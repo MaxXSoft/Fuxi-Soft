@@ -5,7 +5,7 @@ $(call make_obj, UNCOMP, $(UNCOMP_SRC))
 UNCOMP_TARGET := $(BUILD_DIR)/uncompressor.elf
 
 # payload
-PAYLOAD := /Users/maxxing/Programming/MyRepo/GeeOS/build/geeos.elf
+PAYLOAD := $(UNCOMP_DIR)/payload.elf
 COMPRESSOR := $(UNCOMP_DIR)/../../script/compress.py
 COMPRESSED_PAYLOAD := $(BUILD_DIR)/payload.bin
 
