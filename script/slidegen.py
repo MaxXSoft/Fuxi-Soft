@@ -1,4 +1,5 @@
 from PIL import Image
+from compress import compress
 import os
 
 
@@ -25,52 +26,6 @@ def get_img_data(img):
   return data
 
 
-def compress(data):
-  ans = []
-  win = []
-  i = 0
-  while i < len(data):
-    offset = 0
-    length = 1
-    j = 1
-    while j <= len(win):
-      k = len(win) - j
-      if data[i] == win[k]:
-        cur_len = 0
-        for l in range(j):
-          if i + l >= len(data) or data[i + l] != win[k + l]:
-            break
-          cur_len += 1
-        if cur_len > length:
-          offset = j
-          length = cur_len
-      j += 1
-    ans += [offset, length, data[i]]
-    win += data[i:i + length]
-    if len(win) > 255:
-      win = win[len(win) - 255:]
-    i += length
-  return ans
-
-
-def uncompress(data):
-  ans = []
-  win = []
-  for i in range(0, len(data), 3):
-    offset, length, val = data[i:i + 3]
-    if offset == 0:
-      ans.append(val)
-      win.append(val)
-    else:
-      k = len(win) - offset
-      cur = win[k:k + length]
-      ans += cur
-      win += cur
-    if len(win) > 255:
-      win = win[len(win) - 255:]
-  return ans
-
-
 def gen_img_data(img_file):
   img = Image.open(img_file)
   img = get_slide_img(img)
@@ -87,12 +42,14 @@ def print_array2d(arr2d, name):
   print('};\n')
   for k, arr in enumerate(arr2d):
     print(f'const static unsigned char {name}{k}[] = {{')
-    for n, i in enumerate(arr):
+    n = 0
+    for i in arr:
       if n % epl == 0:
         print('  ', end='')
       print(f'{i}, ', end='')
       if n % epl == epl - 1:
         print('')
+      n += 1
     if n % epl != epl - 1:
       print('')
     print('};\n')
