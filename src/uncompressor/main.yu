@@ -1,0 +1,84 @@
+import lib.io
+import lib.queue
+import lib.c.string
+import elf
+
+// defined in 'payload.S'
+extern declare jumpToAddr: (u8*)
+extern declare _payload_start: ()
+extern declare _payload_end: ()
+
+// defined in 'linker.ld'
+extern declare _end: ()
+
+// buffer for uncompressor
+var buf: u8[255]
+
+// append byte to the destination memory
+def appendByte(dest: u8 var*, ofs: i32 var&, byte: u8) {
+  dest[ofs] = byte
+  ofs += 1
+}
+
+// uncompress payload
+def uncompress(data: u8*, size: u32, dest: u8 var*) {
+  io <<< "uncompressing payload...\n"
+  var i = 0, data_ofs = 0, win = newQueue(buf as u8 var*, 255 as u32)
+  while i as u32 < size {
+    let offset = data[i], len = data[i + 1], val = data[i + 2]
+    if !offset {
+      dest.appendByte(data_ofs, val)
+      win.push(val)
+    }
+    else {
+      var j = 0, k = win.len() - offset as u32
+      while j < len as i32 {
+        let cur = win.at(k + j as u32)
+        dest.appendByte(data_ofs, cur)
+        win.push(cur)
+        j += 1
+        k -= 1 as u32
+      }
+    }
+    i += 3
+  }
+}
+
+// load ELF file to memory
+def loadELF(addr: u8*): u8* {
+  // read & check ELF file
+  let elf = newElfFile(addr)
+  let ehdr = elf.getEhdr()
+  if !ehdr.isValid() {
+    io <<< "PANIC: invalid ELF file!\n"
+    while true {}
+  }
+  // copy ELF to RAM
+  io <<< "loading ELF...\n"
+  for phdr in elf.getPhdrIter() {
+    let dst = phdr.getPaddr() as u8 var*
+    let src = elf.getPhdrData(phdr)
+    // copy data
+    memcpy(dst, src, phdr.getFileSize() as u32)
+    // fill zeros to the end of the data
+    let rem_size = phdr.getMemSize() - phdr.getFileSize()
+    memset(dst + phdr.getFileSize(), 0, rem_size as u32)
+  }
+  // get address of entry
+  let phdr = elf.getPhdr()
+  let off = phdr.getVaddr() - phdr.getPaddr()
+  (ehdr.getEntry() - off) as u8*
+}
+
+extern def entry() {
+  // uncompress payload
+  let payload = _payload_start as u8*
+  let size = _payload_start as u32 - _payload_end as u32
+  let dest = _end as u8 var*
+  payload.uncompress(size, dest)
+  // load ELF
+  let addr = loadELF(dest)
+  // jump to ELF file
+  io <<< "jumping to address 0x" <<$ addr as u32 <<< "...\n\n"
+  jumpToAddr(addr)
+}
